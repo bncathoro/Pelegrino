@@ -1,213 +1,179 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pellegrino - Controle de Estoque</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestão - Peregrino</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans pb-16">
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col font-sans">
 
-    <!-- TELA DE LOGIN -->
-    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 w-full max-w-sm shadow-xl">
-            <h1 class="text-2xl font-bold text-center mb-1 text-rose-500">Pellegrino</h1>
-            <p class="text-xs text-center text-slate-400 mb-6">Controle de Estoque & Rastreabilidade</p>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">Selecione o Usuário</label>
-                    <select id="login-user-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none focus:border-rose-500"></select>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">Senha</label>
-                    <input type="password" id="login-pass" placeholder="Digite sua senha" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none focus:border-rose-500">
-                </div>
-                <button onclick="fazerLogin()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-lg text-sm transition">Entrar no Sistema</button>
-                <p id="login-error" class="text-rose-400 text-xs text-center hidden">Senha incorreta.</p>
-            </div>
+  <!-- TELA DE LOGIN -->
+  <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 p-4">
+    <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
+      <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold text-emerald-400 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-boxes-stacked"></i> Peregrino App
+        </h1>
+        <p class="text-xs text-gray-400 mt-1">Insira suas credenciais para acessar o sistema</p>
+      </div>
+
+      <form id="login-form" onsubmit="autenticarUsuario(event)" class="space-y-4">
+        <div>
+          <label for="usuario" class="block text-xs font-semibold text-gray-300 uppercase mb-1">Usuário</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+              <i class="fa-solid fa-user"></i>
+            </span>
+            <input type="text" id="usuario" required autocomplete="username" placeholder="Digite seu usuário"
+              class="w-full pl-10 pr-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+          </div>
         </div>
+
+        <div>
+          <label for="senha" class="block text-xs font-semibold text-gray-300 uppercase mb-1">Senha</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+              <i class="fa-solid fa-lock"></i>
+            </span>
+            <input type="password" id="senha" required autocomplete="current-password" placeholder="Digite sua senha"
+              class="w-full pl-10 pr-10 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+            <button type="button" onclick="alternarVisibilidadeSenha()" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-white focus:outline-none">
+              <i id="icone-olho" class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="login-erro" class="hidden text-xs text-red-400 bg-red-950/50 border border-red-800 rounded p-2 text-center">
+          Usuário ou senha incorretos.
+        </div>
+
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg transition duration-200 text-sm flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket"></i> Entrar no Sistema
+        </button>
+      </form>
     </div>
+  </div>
 
-    <!-- APLICATIVO PRINCIPAL -->
-    <div id="app-screen" class="hidden">
-        <header class="bg-slate-950 p-4 border-b border-slate-800 sticky top-0 z-50">
-            <div class="flex justify-between items-center max-w-4xl mx-auto">
-                <div>
-                    <h1 class="text-xl font-bold text-rose-500">Pellegrino</h1>
-                    <p class="text-xs text-slate-400">Logado como: <span id="user-logged-name" class="font-bold text-white"></span></p>
-                </div>
-                <button onclick="fazerLogout()" class="bg-slate-800 text-xs px-3 py-1.5 rounded-lg text-slate-300">🚪 Sair</button>
-            </div>
+  <!-- CONTEÚDO PRINCIPAL (BLOQUEADO ATÉ LOGIN) -->
+  <div id="app-content" class="hidden min-h-screen flex flex-col">
+    <header class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-40 shadow-md">
+      <div class="max-w-4xl mx-auto flex justify-between items-center">
+        <h1 class="text-xl font-bold text-emerald-400 flex items-center gap-2">
+          <i class="fa-solid fa-boxes-stacked"></i> Peregrino App
+        </h1>
+        <div class="flex items-center gap-3">
+          <span id="status-storage" class="text-xs bg-emerald-950 text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-800">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Salvo Localmente
+          </span>
+          <button onclick="deslogar()" class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded-lg border border-gray-600">
+            <i class="fa-solid fa-right-from-bracket"></i> Sair
+          </button>
+        </div>
+      </div>
+    </header>
 
-            <!-- NAVEGAÇÃO DE ABAS -->
-            <nav class="flex justify-around max-w-4xl mx-auto mt-4 text-xs font-semibold pb-1 gap-1">
-                <button class="px-3 py-2 rounded-lg bg-rose-600 text-white whitespace-nowrap">1. Notas & Caixas</button>
-            </nav>
-        </header>
+    <main class="flex-1 max-w-4xl w-full mx-auto p-4 space-y-6">
+      <section class="bg-gray-800 rounded-xl p-5 border border-gray-700 shadow-sm">
+        <h2 class="text-lg font-semibold mb-2 text-white">Painel Inicial</h2>
+        <p class="text-sm text-gray-400">Login efetuado com sucesso. Aguardando a inclusão do próximo módulo.</p>
+      </section>
+    </main>
 
-        <main class="max-w-4xl mx-auto p-4 space-y-6">
-            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-                <h2 class="text-sm font-bold text-slate-200">📦 Cadastro de Nota Fiscal & Caixas</h2>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Proteína / Corte</label>
-                    <select id="nf-proteina" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
-                        <option value="Ancho">Ancho</option>
-                        <option value="Chorizo">Chorizo</option>
-                        <option value="Contrafilé">Contrafilé</option>
-                        <option value="Alcatra">Alcatra</option>
-                        <option value="Picanha">Picanha</option>
-                    </select>
-                </div>
-                <input type="text" id="nf-numero" placeholder="Número da NF / Fornecedor" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
-                
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[10px] text-slate-400 mb-1">Peso da Caixa (kg)</label>
-                        <input type="number" id="cx-peso" placeholder="Ex: 24.500" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] text-slate-400 mb-1">Qtd. de Peças na Caixa</label>
-                        <input type="number" id="cx-pecas" placeholder="Ex: 4" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
-                    </div>
-                </div>
-                <button onclick="adicionarCaixaNF()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-lg text-sm">Adicionar Caixa à Nota</button>
-            </div>
+    <footer class="bg-gray-800 border-t border-gray-700 p-4 text-center text-xs text-gray-500">
+      Peregrino App &copy; 2026 - Dados persistidos no navegador.
+    </footer>
+  </div>
 
-            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                <h3 class="text-xs font-bold text-slate-400 mb-2">Caixas da Nota Atual</h3>
-                <div id="lista-caixas-parciais" class="space-y-2 text-xs text-slate-300 mb-4"><p class="text-slate-500">Nenhuma caixa adicionada.</p></div>
-                <button onclick="salvarNotaCompleta()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-sm">💾 Salvar Nota Fiscal Completa</button>
-            </div>
+  <script>
+    const APP_STORAGE_KEY = 'peregrino_app_data_v1';
+    
+    // Configuração inicial de login (Usuário e Senha de teste padrão)
+    const CREDENCIAIS_PADRAO = {
+      usuario: 'admin',
+      senha: '123'
+    };
 
-            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                <h3 class="text-xs font-bold text-slate-400 mb-2">Notas Salvas</h3>
-                <div id="lista-nf" class="space-y-2 text-xs text-slate-300"><p class="text-slate-500">Nenhuma nota salva.</p></div>
-            </div>
-        </main>
-    </div>
+    let appState = {
+      autenticado: false,
+      estoque: [],
+      consumo: [],
+      config: {}
+    };
 
-    <script>
-        let caixasTemp = [];
-
-        function inicializarSistema() {
-            const usuariosIniciais = [
-                { nome: 'ADM', pass: 'adm123', role: 'Administrador' },
-                { nome: 'Eli', pass: 'eli123', role: 'Funcionário' },
-                { nome: 'Priscila', pass: 'pri123', role: 'Funcionário' }
-            ];
-            if (!localStorage.getItem('pellegrino_users')) {
-                localStorage.setItem('pellegrino_users', JSON.stringify(usuariosIniciais));
-            }
+    function carregarDados() {
+      const dadosSalvos = localStorage.getItem(APP_STORAGE_KEY);
+      if (dadosSalvos) {
+        try {
+          appState = JSON.parse(dadosSalvos);
+        } catch (e) {
+          console.error('Erro ao ler dados', e);
         }
+      }
+      
+      // Valida se o usuário já estava logado previamente na sessão
+      if (appState.autenticado) {
+        exibirApp();
+      } else {
+        exibirLogin();
+      }
+    }
 
-        function carregarSelectUsuarios() {
-            let users = JSON.parse(localStorage.getItem('pellegrino_users') || '[]');
-            const select = document.getElementById('login-user-select');
-            if (select) {
-                select.innerHTML = '';
-                users.forEach(u => {
-                    select.innerHTML += `<option value="${u.nome}">${u.nome} (${u.role})</option>`;
-                });
-            }
-        }
+    function salvarDados() {
+      localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(appState));
+    }
 
-        function fazerLogin() {
-            const nome = document.getElementById('login-user-select').value;
-            const senha = document.getElementById('login-pass').value;
-            let users = JSON.parse(localStorage.getItem('pellegrino_users') || '[]');
-            let user = users.find(u => u.nome === nome);
+    function alternarVisibilidadeSenha() {
+      const campoSenha = document.getElementById('senha');
+      const iconeOlho = document.getElementById('icone-olho');
 
-            if (user && user.pass === senha) {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('app-screen').classList.remove('hidden');
-                document.getElementById('user-logged-name').innerText = user.nome;
-                carregarNFs();
-            } else {
-                document.getElementById('login-error').classList.remove('hidden');
-            }
-        }
+      if (campoSenha.type === 'password') {
+        campoSenha.type = 'text';
+        iconeOlho.classList.remove('fa-eye');
+        iconeOlho.classList.add('fa-eye-slash');
+      } else {
+        campoSenha.type = 'password';
+        iconeOlho.classList.remove('fa-eye-slash');
+        iconeOlho.classList.add('fa-eye');
+      }
+    }
 
-        function fazerLogout() {
-            document.getElementById('app-screen').classList.add('hidden');
-            document.getElementById('login-screen').classList.remove('hidden');
-            carregarSelectUsuarios();
-        }
+    function autenticarUsuario(event) {
+      event.preventDefault();
+      const usuarioInput = document.getElementById('usuario').value.trim();
+      const senhaInput = document.getElementById('senha').value.trim();
+      const erroElemento = document.getElementById('login-erro');
 
-        function adicionarCaixaNF() {
-            const peso = parseFloat(document.getElementById('cx-peso').value);
-            const pecas = parseInt(document.getElementById('cx-pecas').value);
+      if (usuarioInput === CREDENCIAIS_PADRAO.usuario && senhaInput === CREDENCIAIS_PADRAO.senha) {
+        appState.autenticado = true;
+        salvarDados();
+        erroElemento.classList.add('hidden');
+        exibirApp();
+      } else {
+        erroElemento.classList.remove('hidden');
+      }
+    }
 
-            if (isNaN(peso) || isNaN(pecas) || peso <= 0 || pecas <= 0) {
-                alert("Informe um peso e quantidade de peças válidos!");
-                return;
-            }
+    function deslogar() {
+      appState.autenticado = false;
+      salvarDados();
+      exibirLogin();
+    }
 
-            caixasTemp.push({ peso, pecas });
-            document.getElementById('cx-peso').value = '';
-            document.getElementById('cx-pecas').value = '';
-            renderizarCaixasTemp();
-        }
+    function exibirApp() {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app-content').classList.remove('hidden');
+    }
 
-        function renderizarCaixasTemp() {
-            const container = document.getElementById('lista-caixas-parciais');
-            container.innerHTML = caixasTemp.length === 0 ? '<p class="text-slate-500">Nenhuma caixa adicionada.</p>' : '';
-            caixasTemp.forEach((cx, idx) => {
-                container.innerHTML += `
-                    <div class="bg-slate-900 p-2 rounded border border-slate-800 flex justify-between items-center">
-                        <span>Caixa #${idx+1}: ${cx.peso} kg | ${cx.pecas} peças</span>
-                        <button onclick="caixasTemp.splice(${idx},1); renderizarCaixasTemp();" class="text-red-400 text-xs">Remover</button>
-                    </div>
-                `;
-            });
-        }
+    function exibirLogin() {
+      document.getElementById('app-content').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+    }
 
-        function salvarNotaCompleta() {
-            const numero = document.getElementById('nf-numero').value.trim();
-            const proteina = document.getElementById('nf-proteina').value;
-
-            if (!numero) {
-                alert("Informe o número da NF!");
-                return;
-            }
-            if (caixasTemp.length === 0) {
-                alert("Adicione pelo menos uma caixa!");
-                return;
-            }
-
-            let nfs = JSON.parse(localStorage.getItem('pellegrino_nfs') || '[]');
-            nfs.push({ numero, proteina, caixas: [...caixasTemp] });
-            localStorage.setItem('pellegrino_nfs', JSON.stringify(nfs));
-
-            caixasTemp = [];
-            document.getElementById('nf-numero').value = '';
-            renderizarCaixasTemp();
-            carregarNFs();
-            alert("Nota salva com sucesso!");
-        }
-
-        function carregarNFs() {
-            let nfs = JSON.parse(localStorage.getItem('pellegrino_nfs') || '[]');
-            const container = document.getElementById('lista-nf');
-            container.innerHTML = nfs.length === 0 ? '<p class="text-slate-500">Nenhuma nota salva.</p>' : '';
-            nfs.forEach((nf, idx) => {
-                let totalKg = nf.caixas.reduce((acc, c) => acc + c.peso, 0);
-                container.innerHTML += `
-                    <div class="bg-slate-900 p-2.5 rounded border border-slate-800 flex justify-between items-center">
-                        <div>
-                            <span class="font-bold text-rose-400">[${nf.proteina}]</span> NF: ${nf.numero} (${nf.caixas.length} caixas)
-                        </div>
-                        <span class="font-bold text-rose-400">${totalKg.toFixed(2)} kg</span>
-                    </div>
-                `;
-            });
-        }
-
-        window.onload = function() {
-            inicializarSistema();
-            carregarSelectUsuarios();
-        };
-    </script>
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarDados();
+    });
+  </script>
 </body>
 </html>
-
